@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 from group import Group
-
+from collections import Counter
 
 def validate_user_input(topics: list) -> int:
     while True:
@@ -23,7 +23,13 @@ async def main():
     list_of_topics = await group.forum_topics()
     if list_of_topics:
         topic_id = validate_user_input(list_of_topics)
-        await group.topic(topic_id)
+        emoticons = await group.topic(topic_id)
+    else:
+        emoticons = await group.topic()
+
+    emote_counter = Counter(emoticons)
+    for stringa, occorrenze in emote_counter.items():
+        print(f"{stringa}: {occorrenze}")
     loop.stop()
 
 
