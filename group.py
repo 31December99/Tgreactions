@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from mytelegram import MyTelegram
-from telethon import functions, errors
+from telethon import functions, errors, events
+from telethon.tl.types import UpdateMessageReactions
 
 
 class Group:
@@ -13,6 +14,41 @@ class Group:
         await self.telegram.login()
         print(f"-> [INVITE LINK] {self.telegram.INVITE_LINK}")
         print(f"-> [CHANNEL ID]  {self.telegram.channel.channel_id}")
+
+        @self.telegram.takeout.on(events.Raw(UpdateMessageReactions))
+        async def handler(event):
+
+            message_txt = ""
+            for result in event.reactions.results:
+                try:
+                    message = await self.telegram.takeout.get_messages(self.telegram.channel.channel_id,
+                                                                       ids=event.msg_id)
+
+                    user_entity = await self.telegram.takeout.get_entity(message.from_id.user_id)
+                    message_txt = f"""----------------------------------------------
+                    [New Event Reaction!]
+                    Message:{message.text}
+                    {user_entity.first_name} {user_entity.username}
+                    [Emoticon]: ** {result.reaction.emoticon} **
+                    """
+                except AttributeError as e:
+                    print(e)
+                await self.telegram.takeout.send_message("Me", message_txt)
+
+    async def input(self) -> [int, None]:
+
+        # Get list of topics
+        topics = await self.forum_topics()
+        if not topics:
+            return None
+
+        while True:
+            index = input(f"Choose which topic you want to check (0-{len(topics) - 1}): ")
+            if index.isnumeric():
+                topic_index = int(index)
+                if 0 <= topic_index <= len(topics) - 1:
+                    topic_id, topic_title = topics[topic_index]
+                    return topic_id
 
     async def topic(self, topic_id=None) -> []:
         """
@@ -33,13 +69,13 @@ class Group:
                 if message.reactions.results:
                     for result in message.reactions.results:
                         try:
-                            # print('U+{:X}'.format(ord(result.reaction.emoticon)))
-                            print(f"[Emoticon]: ** {result.reaction.emoticon} **\n")
+                            print(f"[Messaged ID]:{message.id} [Emoticon]: ** {result.reaction.emoticon} **")
                             emoticons_list.append(result.reaction.emoticon)
                         except AttributeError:
                             pass
             else:
-                print(f"[Messaged ID]:{message.id} No Emoticon")
+                # print(f"[Messaged ID]:{message.id} **  **")
+                pass
         return emoticons_list
 
     async def forum_topics(self) -> []:
@@ -49,6 +85,7 @@ class Group:
         :param topic_id: topic ID
         :return: list of topics
         """
+
         try:
             result = await self.telegram.takeout(functions.channels.GetForumTopicsRequest(
                 channel=self.telegram.channel,  # channel entity
