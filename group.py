@@ -14,11 +14,12 @@ class Group:
         print(f"-> [INVITE LINK] {self.telegram.INVITE_LINK}")
         print(f"-> [CHANNEL ID]  {self.telegram.channel.channel_id}")
 
-    async def topic(self, topic_id=None):
+    async def topic(self, topic_id=None) -> []:
         """
          Select a topic and add each photo to the media_list
         :return:
         """
+        emoticons_list = []
         async for message in self.telegram.takeout.iter_messages(self.telegram.channel.channel_id,
                                                                  limit=None,
                                                                  reverse=False,
@@ -32,14 +33,16 @@ class Group:
                 if message.reactions.results:
                     for result in message.reactions.results:
                         try:
-                            print(f"[Messaged ID]:{message.id} [Emoticon]: ** {result.reaction.emoticon} **")
-                            print()
+                            # print('U+{:X}'.format(ord(result.reaction.emoticon)))
+                            print(f"[Emoticon]: ** {result.reaction.emoticon} **\n")
+                            emoticons_list.append(result.reaction.emoticon)
                         except AttributeError:
                             pass
             else:
                 print(f"[Messaged ID]:{message.id} No Emoticon")
+            return emoticons_list
 
-    async def forum_topics(self) -> list:
+    async def forum_topics(self) -> []:
         """
          Using TL reference : https://docs.telethon.dev/en/stable/concepts/full-api.html#functions
         Get a list of topics from a channel entity
