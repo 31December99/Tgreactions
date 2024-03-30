@@ -40,7 +40,7 @@ class Group:
                             pass
             else:
                 print(f"[Messaged ID]:{message.id} No Emoticon")
-            return emoticons_list
+        return emoticons_list
 
     async def forum_topics(self) -> []:
         """
